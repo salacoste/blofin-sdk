@@ -1,0 +1,41 @@
+{
+  "name": "blofin-sdk",
+  "version": "0.7.2",
+  "description": "Typescript SDK for Blofin API",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "blofin",
+    "sdk",
+    "api",
+    "crypto"
+  ],
+  "author": "Ivan D",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salacoste/blofin-sdk.git"
+  },
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/node": "^22.5.4",
+    "axios": "^1.7.7",
+    "typescript": "^5.5.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@types/jest": "^29.5.12",
+    "eslint": "^9.9.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.9.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.3.3",
+    "ts-jest": "^29.2.5",
+    "typescript-eslint": "^8.4.0"
+  }
+}
