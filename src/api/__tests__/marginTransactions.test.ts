@@ -1,19 +1,47 @@
-import { MarginTransactionsAPI } from '../marginTransactions';
-import { httpClient } from '../../httpClient';
+import { MarginTransactionsAPI, MarginTransactionResponse } from '../marginTransactions';
+import { HttpClient } from '../../httpClient';
 
 jest.mock('../../httpClient');
 
 describe('MarginTransactionsAPI', () => {
-  const marginTransactionsAPI = new MarginTransactionsAPI();
+  let httpClient: jest.Mocked<HttpClient>;
+  let marginTransactionsAPI: MarginTransactionsAPI;
 
-  it('should fetch margin transactions', async () => {
-    const mockResponse = [
-      { transactionId: '123', asset: 'BTC', amount: '1', type: 'borrow', timestamp: 1633024800000 }
+  beforeEach(() => {
+    httpClient = new HttpClient('mockApiKey', 'mockSecret') as jest.Mocked<HttpClient>;
+    marginTransactionsAPI = new MarginTransactionsAPI(httpClient);
+  });
+
+  it('should fetch margin transactions successfully', async () => {
+    const mockResponse: MarginTransactionResponse[] = [
+      {
+        transactionId: '1',
+        asset: 'BTC',
+        amount: '0.1',
+        type: 'borrow',
+        timestamp: 1625247600000,
+      },
+      {
+        transactionId: '2',
+        asset: 'ETH',
+        amount: '1.5',
+        type: 'repay',
+        timestamp: 1625247600000,
+      },
     ];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
-    const response = await marginTransactionsAPI.getMarginTransactions();
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
+
+    const result = await marginTransactionsAPI.getMarginTransactions();
+
     expect(httpClient.get).toHaveBeenCalledWith('/api/v1/margin/transactions');
-    expect(response).toEqual(mockResponse);
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('should handle errors when fetching margin transactions', async () => {
+    const mockError = new Error('Network Error');
+    httpClient.get = jest.fn().mockRejectedValue(mockError);
+
+    await expect(marginTransactionsAPI.getMarginTransactions()).rejects.toThrow('Network Error');
   });
 });

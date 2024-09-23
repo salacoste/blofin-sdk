@@ -1,5 +1,6 @@
-import { httpClient } from '../httpClient'; // Добавлен импорт
+import { HttpClient } from '../httpClient';
 
+// Define necessary interfaces
 export interface TickerResponse {
   symbol: string;
   price: string;
@@ -12,109 +13,16 @@ export interface TradeResponse {
   timestamp: number;
 }
 
-export class MarketAPI {
-  /**
- * Получение текущего тикера для символа.
- * @param {string} symbol - Символ актива.
- * @returns {Promise<TickerResponse>} Текущая цена и символ.
- */
-public async getTicker(symbol: string): Promise<TickerResponse> {
-  return httpClient.get<TickerResponse>('/api/v1/market/ticker', { symbol });
-}
-
-/**
- * Получение истории сделок для символа.
- * @param {string} symbol - Символ актива.
- * @returns {Promise<TradeResponse[]>} Массив данных по сделкам.
- */
-public async getTrades(symbol: string): Promise<TradeResponse[]> {
-  return httpClient.get<TradeResponse[]>('/api/v1/market/trades', { symbol });
-}
-
-/**
- * Получение списка активных инструментов.
- * @returns {Promise<InstrumentResponse[]>} Массив активных инструментов.
- */
-public async getInstruments(): Promise<InstrumentResponse[]> {
-  return httpClient.get<InstrumentResponse[]>('/api/v1/market/instruments');
-}
-
-/**
- * Получение стакана ордеров для символа.
- * @param {string} symbol - Символ актива.
- * @returns {Promise<OrderBookResponse>} Стакан ордеров (цены и объемы).
- */
-public async getOrderBook(symbol: string): Promise<OrderBookResponse> {
-  return httpClient.get<OrderBookResponse>('/api/v1/market/books', { symbol });
-}
-
-/**
- * Получение данных по свечам (candlestick) для символа.
- * @param {string} symbol - Символ актива.
- * @param {string} interval - Интервал свечи (1m, 5m и т.д.).
- * @returns {Promise<CandlestickResponse[]>} Массив данных по свечам.
- */
-public async getCandlesticks(symbol: string, interval: string): Promise<CandlestickResponse[]> {
-  return httpClient.get<CandlestickResponse[]>('/api/v1/market/candles', { symbol, interval });
-}
-
-/**
- * Получение текущего funding rate для символа.
- * @param {string} symbol - Символ актива.
- * @returns {Promise<FundingRateResponse>} Текущий funding rate и символ.
- */
-public async getFundingRate(symbol: string): Promise<FundingRateResponse> {
-  return httpClient.get<FundingRateResponse>('/api/v1/market/funding-rate', { symbol });
-}
-
-/**
- * Получение истории funding rate для символа.
- * @param {string} symbol - Символ актива.
- * @returns {Promise<FundingRateHistoryResponse[]>} Массив данных по истории funding rate.
- */
-public async getFundingRateHistory(symbol: string): Promise<FundingRateHistoryResponse[]> {
-  return httpClient.get<FundingRateHistoryResponse[]>('/api/v1/market/funding-rate-history', { symbol });
-}
-
-/**
- * Получение текущей mark price для символа.
- * @param {string} symbol - Символ актива.
- * @returns {Promise<MarkPriceResponse>} Текущая mark price и время.
- */
-public async getMarkPrice(symbol: string): Promise<MarkPriceResponse> {
-  return httpClient.get<MarkPriceResponse>('/api/v1/market/mark-price', { symbol });
-}
-
-/**
- * Получение данных по всем тикерам.
- * @returns {Promise<TickerInfo[]>} Массив данных по всем тикерам.
- */
-public async getAllTickers(): Promise<TickerInfo[]> {
-  return httpClient.get<TickerInfo[]>('/api/v1/market/tickers');
-}
-
-/**
- * Получение истории сделок для символа.
- * @param {string} symbol - Символ актива.
- * @returns {Promise<TradeHistoryResponse[]>} Массив данных по истории сделок.
- */
-public async getTradeHistory(symbol: string): Promise<TradeHistoryResponse[]> {
-  return httpClient.get<TradeHistoryResponse[]>('/api/v1/market/trades-history', { symbol });
-}
-
-}
-
-
 export interface InstrumentResponse {
   symbol: string;
   baseAsset: string;
   quoteAsset: string;
   status: string;
 }
- 
+
 export interface OrderBookResponse {
-  bids: [string, string][]; // массив с [цена, количество]
-  asks: [string, string][]; // массив с [цена, количество]
+  bids: [string, string][];
+  asks: [string, string][];
   timestamp: number;
 }
 
@@ -145,6 +53,7 @@ export interface MarkPriceResponse {
   markPrice: string;
   timestamp: number;
 }
+
 export interface TickerInfo {
   symbol: string;
   price: string;
@@ -157,10 +66,61 @@ export interface TradeHistoryResponse {
   timestamp: number;
 }
 
- 
+// MarketAPI class utilizing the new HttpClient
+export class MarketAPI {
+  private httpClient: HttpClient;
 
- 
- 
- 
- 
- 
+  constructor(httpClient: HttpClient) {
+    this.httpClient = httpClient;
+  }
+
+  // Fetch ticker for a specific symbol
+  public async getTicker(symbol: string): Promise<TickerResponse> {
+    return this.httpClient.get<TickerResponse>('/api/v1/market/ticker', { symbol });
+  }
+
+  // Fetch trade history for a specific symbol
+  public async getTrades(symbol: string): Promise<TradeResponse[]> {
+    return this.httpClient.get<TradeResponse[]>('/api/v1/market/trades', { symbol });
+  }
+
+  // Fetch list of all available instruments
+  public async getInstruments(): Promise<InstrumentResponse[]> {
+    return this.httpClient.get<InstrumentResponse[]>('/api/v1/market/instruments');
+  }
+
+  // Fetch order book for a specific symbol
+  public async getOrderBook(symbol: string): Promise<OrderBookResponse> {
+    return this.httpClient.get<OrderBookResponse>('/api/v1/market/books', { symbol });
+  }
+
+  // Fetch candlestick data for a specific symbol and interval
+  public async getCandlesticks(symbol: string, interval: string): Promise<CandlestickResponse[]> {
+    return this.httpClient.get<CandlestickResponse[]>('/api/v1/market/candles', { symbol, interval });
+  }
+
+  // Fetch funding rate for a specific symbol
+  public async getFundingRate(symbol: string): Promise<FundingRateResponse> {
+    return this.httpClient.get<FundingRateResponse>('/api/v1/market/funding-rate', { symbol });
+  }
+
+  // Fetch funding rate history for a specific symbol
+  public async getFundingRateHistory(symbol: string): Promise<FundingRateHistoryResponse[]> {
+    return this.httpClient.get<FundingRateHistoryResponse[]>('/api/v1/market/funding-rate-history', { symbol });
+  }
+
+  // Fetch current mark price for a specific symbol
+  public async getMarkPrice(symbol: string): Promise<MarkPriceResponse> {
+    return this.httpClient.get<MarkPriceResponse>('/api/v1/market/mark-price', { symbol });
+  }
+
+  // Fetch all tickers
+  public async getAllTickers(): Promise<TickerInfo[]> {
+    return this.httpClient.get<TickerInfo[]>('/api/v1/market/tickers');
+  }
+
+  // Fetch trade history for a specific symbol
+  public async getTradeHistory(symbol: string): Promise<TradeHistoryResponse[]> {
+    return this.httpClient.get<TradeHistoryResponse[]>('/api/v1/market/trades-history', { symbol });
+  }
+}

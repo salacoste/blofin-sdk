@@ -4,7 +4,7 @@
   "description": "Typescript SDK for Blofin API",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --preset ts-jest",
     "build": "tsc",
     "prepare": "npm run build"
   },
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^29.5.13",
     "eslint": "^9.9.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",

@@ -1,38 +1,70 @@
-import { OrderAPI } from '../order';
-import { httpClient } from '../../httpClient';
+import { OrderAPI, OrderRequest, OrderResponse, OpenOrderResponse, OrderHistoryResponse } from '../order';
+import { HttpClient } from '../../httpClient';
 
 jest.mock('../../httpClient');
 
 describe('OrderAPI', () => {
-  const orderAPI = new OrderAPI();
+  let httpClient: jest.Mocked<HttpClient>;
+  let orderAPI: OrderAPI;
 
-  it('should create an order', async () => {
-    const mockRequest = { symbol: 'BTCUSDT', side: 'buy' as const, type: 'limit' as const, quantity: '1', price: '50000' };
-    const mockResponse = { orderId: '123', status: 'open' };
-    (httpClient.post as jest.Mock).mockResolvedValue(mockResponse);
-
-    const response = await orderAPI.createOrder(mockRequest);
-    expect(httpClient.post).toHaveBeenCalledWith('/api/v1/order', mockRequest);
-    expect(response).toEqual(mockResponse);
+  beforeEach(() => {
+    httpClient = new HttpClient('mockApiKey', 'mockSecret') as jest.Mocked<HttpClient>;
+    orderAPI = new OrderAPI(httpClient);
   });
 
-  it('should fetch open orders', async () => {
-    const mockResponse = [{ orderId: '123', symbol: 'BTCUSDT', status: 'open' }];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  describe('createOrder', () => {
+    it('should create an order and return the response', async () => {
+      const orderRequest: OrderRequest = {
+        symbol: 'BTCUSD',
+        side: 'buy',
+        type: 'limit',
+        quantity: '1',
+        price: '50000',
+      };
 
-    const response = await orderAPI.getOpenOrders();
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/order/open');
-    expect(response).toEqual(mockResponse);
+      const orderResponse: OrderResponse = {
+        orderId: '12345',
+        status: 'created',
+      };
+
+      httpClient.post = jest.fn().mockResolvedValue(orderResponse);
+
+      const result = await orderAPI.createOrder(orderRequest);
+
+      expect(httpClient.post).toHaveBeenCalledWith('/api/v1/order', orderRequest);
+      expect(result).toEqual(orderResponse);
+    });
   });
 
-  it('should fetch order history', async () => {
-    const mockResponse = [
-      { orderId: '123', symbol: 'BTCUSDT', status: 'closed', executedQty: '1', price: '50000', time: 1633024800000 }
-    ];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  describe('getOpenOrders', () => {
+    it('should return a list of open orders', async () => {
+      const openOrdersResponse: OpenOrderResponse[] = [
+        { orderId: '12345', symbol: 'BTCUSD', status: 'open' },
+        { orderId: '67890', symbol: 'ETHUSD', status: 'open' },
+      ];
 
-    const response = await orderAPI.getOrderHistory();
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/order/history');
-    expect(response).toEqual(mockResponse);
+      httpClient.get = jest.fn().mockResolvedValue(openOrdersResponse);
+
+      const result = await orderAPI.getOpenOrders();
+
+      expect(httpClient.get).toHaveBeenCalledWith('/api/v1/order/open');
+      expect(result).toEqual(openOrdersResponse);
+    });
+  });
+
+  describe('getOrderHistory', () => {
+    it('should return a list of order history', async () => {
+      const orderHistoryResponse: OrderHistoryResponse[] = [
+        { orderId: '12345', symbol: 'BTCUSD', status: 'filled', executedQty: '1', price: '50000', time: 1620000000000 },
+        { orderId: '67890', symbol: 'ETHUSD', status: 'filled', executedQty: '2', price: '2500', time: 1620000000001 },
+      ];
+
+      httpClient.get = jest.fn().mockResolvedValue(orderHistoryResponse);
+
+      const result = await orderAPI.getOrderHistory();
+
+      expect(httpClient.get).toHaveBeenCalledWith('/api/v1/order/history');
+      expect(result).toEqual(orderHistoryResponse);
+    });
   });
 });

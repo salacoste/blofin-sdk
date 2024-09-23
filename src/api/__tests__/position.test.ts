@@ -1,25 +1,39 @@
-import { PositionAPI } from '../position';
-import { httpClient } from '../../httpClient';
+import { PositionAPI, PositionResponse, ClosePositionRequest } from '../position';
+import { HttpClient } from '../../httpClient';
 
 jest.mock('../../httpClient');
 
 describe('PositionAPI', () => {
-  const positionAPI = new PositionAPI();
+  let httpClient: jest.Mocked<HttpClient>;
+  let positionAPI: PositionAPI;
 
-  it('should fetch positions', async () => {
-    const mockResponse = [{ symbol: 'BTCUSDT', positionAmount: '1', entryPrice: '50000' }];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
-
-    const response = await positionAPI.getPosition();
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/position');
-    expect(response).toEqual(mockResponse);
+  beforeEach(() => {
+    httpClient = new HttpClient('mockApiKey', 'mockSecret') as jest.Mocked<HttpClient>;
+    positionAPI = new PositionAPI(httpClient);
   });
 
-  it('should close a position', async () => {
-    const mockRequest = { symbol: 'BTCUSDT', positionSide: 'LONG' as const };
-    (httpClient.post as jest.Mock).mockResolvedValue(undefined);
+  describe('getPosition', () => {
+    it('should fetch current positions', async () => {
+      const mockResponse: PositionResponse[] = [
+        { symbol: 'BTCUSD', positionAmount: '1', entryPrice: '50000' },
+      ];
+      httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    await positionAPI.closePosition(mockRequest);
-    expect(httpClient.post).toHaveBeenCalledWith('/api/v1/position/close', mockRequest);
+      const result = await positionAPI.getPosition();
+
+      expect(httpClient.get).toHaveBeenCalledWith('/api/v1/position');
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('closePosition', () => {
+    it('should close a position', async () => {
+      const request: ClosePositionRequest = { symbol: 'BTCUSD', positionSide: 'LONG' };
+      httpClient.post = jest.fn().mockResolvedValue(undefined);
+
+      await positionAPI.closePosition(request);
+
+      expect(httpClient.post).toHaveBeenCalledWith('/api/v1/position/close', request);
+    });
   });
 });

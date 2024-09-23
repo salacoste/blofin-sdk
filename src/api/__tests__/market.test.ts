@@ -1,106 +1,114 @@
 import { MarketAPI } from '../market';
-import { httpClient } from '../../httpClient';
+import { HttpClient } from '../../httpClient';
 
 jest.mock('../../httpClient');
 
 describe('MarketAPI', () => {
-  const marketAPI = new MarketAPI();
+  let httpClient: jest.Mocked<HttpClient>;
+  let marketAPI: MarketAPI;
 
-  it('should fetch ticker data', async () => {
-    const mockResponse = { symbol: 'BTCUSDT', price: '50000' };
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
-
-    const response = await marketAPI.getTicker('BTCUSDT');
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/ticker', { symbol: 'BTCUSDT' });
-    expect(response).toEqual(mockResponse);
+  beforeEach(() => {
+    httpClient = new HttpClient('mockApiKey', 'mockSecret') as jest.Mocked<HttpClient>;
+    marketAPI = new MarketAPI(httpClient);
   });
 
-  it('should fetch trade history', async () => {
-    const mockResponse = [{ id: 123, price: '50000', quantity: '1', timestamp: 1633024800000 }];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  it('should fetch ticker for a specific symbol', async () => {
+    const mockResponse = { symbol: 'BTCUSD', price: '50000' };
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marketAPI.getTradeHistory('BTCUSDT');
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/trades-history', { symbol: 'BTCUSDT' });
-    expect(response).toEqual(mockResponse);
+    const result = await marketAPI.getTicker('BTCUSD');
+
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/ticker', { symbol: 'BTCUSD' });
+    expect(result).toEqual(mockResponse);
   });
 
-  it('should fetch instruments', async () => {
-    const mockResponse = [{ symbol: 'BTCUSDT', baseAsset: 'BTC', quoteAsset: 'USDT', status: 'active' }];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  it('should fetch trade history for a specific symbol', async () => {
+    const mockResponse = [{ id: 1, price: '50000', quantity: '0.1', timestamp: 1620000000 }];
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marketAPI.getInstruments();
+    const result = await marketAPI.getTrades('BTCUSD');
+
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/trades', { symbol: 'BTCUSD' });
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('should fetch list of all available instruments', async () => {
+    const mockResponse = [{ symbol: 'BTCUSD', baseAsset: 'BTC', quoteAsset: 'USD', status: 'active' }];
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
+
+    const result = await marketAPI.getInstruments();
+
     expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/instruments');
-    expect(response).toEqual(mockResponse);
+    expect(result).toEqual(mockResponse);
   });
 
-  it('should fetch order book', async () => {
-    const mockResponse = {
-      bids: [['50000', '1']],
-      asks: [['50010', '1']],
-      timestamp: 1633024800000
-    };
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  it('should fetch order book for a specific symbol', async () => {
+    const mockResponse = { bids: [['50000', '1']], asks: [['51000', '1']], timestamp: 1620000000 };
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marketAPI.getOrderBook('BTCUSDT');
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/books', { symbol: 'BTCUSDT' });
-    expect(response).toEqual(mockResponse);
+    const result = await marketAPI.getOrderBook('BTCUSD');
+
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/books', { symbol: 'BTCUSD' });
+    expect(result).toEqual(mockResponse);
   });
 
-  it('should fetch candlesticks', async () => {
-    const mockResponse = [
-      {
-        openTime: 1633024800000,
-        open: '50000',
-        high: '51000',
-        low: '49000',
-        close: '50500',
-        volume: '100',
-        closeTime: 1633034800000
-      }
-    ];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  it('should fetch candlestick data for a specific symbol and interval', async () => {
+    const mockResponse = [{ openTime: 1620000000, open: '50000', high: '51000', low: '49000', close: '50500', volume: '100', closeTime: 1620003600 }];
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marketAPI.getCandlesticks('BTCUSDT', '1h');
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/candles', {
-      symbol: 'BTCUSDT',
-      interval: '1h'
-    });
-    expect(response).toEqual(mockResponse);
+    const result = await marketAPI.getCandlesticks('BTCUSD', '1h');
+
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/candles', { symbol: 'BTCUSD', interval: '1h' });
+    expect(result).toEqual(mockResponse);
   });
 
-  it('should fetch funding rate', async () => {
-    const mockResponse = { symbol: 'BTCUSDT', fundingRate: '0.01', nextFundingTime: 1633034800000 };
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  it('should fetch funding rate for a specific symbol', async () => {
+    const mockResponse = { symbol: 'BTCUSD', fundingRate: '0.01', nextFundingTime: 1620007200 };
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marketAPI.getFundingRate('BTCUSDT');
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/funding-rate', { symbol: 'BTCUSDT' });
-    expect(response).toEqual(mockResponse);
+    const result = await marketAPI.getFundingRate('BTCUSD');
+
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/funding-rate', { symbol: 'BTCUSD' });
+    expect(result).toEqual(mockResponse);
   });
 
-  it('should fetch funding rate history', async () => {
-    const mockResponse = [{ symbol: 'BTCUSDT', fundingRate: '0.01', fundingTime: 1633024800000 }];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  it('should fetch funding rate history for a specific symbol', async () => {
+    const mockResponse = [{ symbol: 'BTCUSD', fundingRate: '0.01', fundingTime: 1620000000 }];
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marketAPI.getFundingRateHistory('BTCUSDT');
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/funding-rate-history', { symbol: 'BTCUSDT' });
-    expect(response).toEqual(mockResponse);
+    const result = await marketAPI.getFundingRateHistory('BTCUSD');
+
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/funding-rate-history', { symbol: 'BTCUSD' });
+    expect(result).toEqual(mockResponse);
   });
 
-  it('should fetch mark price', async () => {
-    const mockResponse = { symbol: 'BTCUSDT', markPrice: '50000', timestamp: 1633024800000 };
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+  it('should fetch current mark price for a specific symbol', async () => {
+    const mockResponse = { symbol: 'BTCUSD', markPrice: '50500', timestamp: 1620000000 };
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marketAPI.getMarkPrice('BTCUSDT');
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/mark-price', { symbol: 'BTCUSDT' });
-    expect(response).toEqual(mockResponse);
+    const result = await marketAPI.getMarkPrice('BTCUSD');
+
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/mark-price', { symbol: 'BTCUSD' });
+    expect(result).toEqual(mockResponse);
   });
 
   it('should fetch all tickers', async () => {
-    const mockResponse = [{ symbol: 'BTCUSDT', price: '50000' }];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+    const mockResponse = [{ symbol: 'BTCUSD', price: '50500' }];
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marketAPI.getAllTickers();
+    const result = await marketAPI.getAllTickers();
+
     expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/tickers');
-    expect(response).toEqual(mockResponse);
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('should fetch trade history for a specific symbol', async () => {
+    const mockResponse = [{ id: 1, price: '50000', quantity: '0.1', timestamp: 1620000000 }];
+    httpClient.get = jest.fn().mockResolvedValue(mockResponse);
+
+    const result = await marketAPI.getTradeHistory('BTCUSD');
+
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/market/trades-history', { symbol: 'BTCUSD' });
+    expect(result).toEqual(mockResponse);
   });
 });

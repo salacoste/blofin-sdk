@@ -1,4 +1,4 @@
-import { httpClient } from '../httpClient';
+import { HttpClient } from '../httpClient';
 
 export interface FeesResponse {
   makerFee: string;
@@ -6,11 +6,18 @@ export interface FeesResponse {
 }
 
 export class FeesAPI {
- /**
- * Получение данных о комиссиях.
- * @returns {Promise<FeesResponse>} Информация о комиссиях (maker и taker).
- */
-public async getFees(): Promise<FeesResponse> {
-  return httpClient.get<FeesResponse>('/api/v1/account/fees');
-}
+  private httpClient: HttpClient;
+
+  // Конструктор принимает экземпляр HttpClient
+  constructor(httpClient: HttpClient) {
+    this.httpClient = httpClient;
+  }
+
+  /**
+   * Получение данных о комиссиях.
+   * @returns {Promise<FeesResponse>} Информация о комиссиях (maker и taker).
+   */
+  public async getFees(): Promise<FeesResponse> {
+    return this.httpClient.get<FeesResponse>('/api/v1/account/fees');
+  }
 }

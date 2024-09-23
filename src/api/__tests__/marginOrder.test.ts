@@ -1,18 +1,52 @@
-import { MarginOrderAPI } from '../marginOrder';
-import { httpClient } from '../../httpClient';
+import { MarginOrderAPI, MarginOrderRequest, MarginOrderResponse } from '../marginOrder';
+import { HttpClient } from '../../httpClient';
 
 jest.mock('../../httpClient');
 
 describe('MarginOrderAPI', () => {
-  const marginOrderAPI = new MarginOrderAPI();
+  let httpClient: jest.Mocked<HttpClient>;
+  let marginOrderAPI: MarginOrderAPI;
 
-  it('should create a margin order', async () => {
-    const mockRequest = { symbol: 'BTCUSDT', side: 'buy' as const, type: 'limit' as const, quantity: '1', price: '50000' };
-    const mockResponse = { orderId: '123', status: 'open' };
-    (httpClient.post as jest.Mock).mockResolvedValue(mockResponse);
+  beforeEach(() => {
+    httpClient = new HttpClient('mockApiKey', 'mockSecret') as jest.Mocked<HttpClient>;
+    marginOrderAPI = new MarginOrderAPI(httpClient);
+  });
 
-    const response = await marginOrderAPI.createMarginOrder(mockRequest);
-    expect(httpClient.post).toHaveBeenCalledWith('/api/v1/order/margin', mockRequest);
-    expect(response).toEqual(mockResponse);
+  it('should create a margin order successfully', async () => {
+    const orderRequest: MarginOrderRequest = {
+      symbol: 'BTCUSD',
+      side: 'buy',
+      type: 'limit',
+      quantity: '1',
+      price: '50000'
+    };
+
+    const orderResponse: MarginOrderResponse = {
+      orderId: '12345',
+      status: 'created'
+    };
+
+    httpClient.post = jest.fn().mockResolvedValue(orderResponse);
+
+    const result = await marginOrderAPI.createMarginOrder(orderRequest);
+
+    expect(httpClient.post).toHaveBeenCalledWith('/api/v1/order/margin', orderRequest);
+    expect(result).toEqual(orderResponse);
+  });
+
+  it('should handle error when creating a margin order', async () => {
+    const orderRequest: MarginOrderRequest = {
+      symbol: 'BTCUSD',
+      side: 'buy',
+      type: 'limit',
+      quantity: '1',
+      price: '50000'
+    };
+
+    const errorMessage = 'Network Error';
+    httpClient.post = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+    await expect(marginOrderAPI.createMarginOrder(orderRequest)).rejects.toThrow(errorMessage);
+    expect(httpClient.post).toHaveBeenCalledWith('/api/v1/order/margin', orderRequest);
   });
 });

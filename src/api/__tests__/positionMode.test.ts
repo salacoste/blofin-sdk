@@ -1,25 +1,41 @@
-import { PositionModeAPI } from '../positionMode';
-import { httpClient } from '../../httpClient';
+import { PositionModeAPI, PositionModeResponse } from '../positionMode';
+import { HttpClient } from '../../httpClient';
 
 jest.mock('../../httpClient');
 
 describe('PositionModeAPI', () => {
-  const positionModeAPI = new PositionModeAPI();
+  let httpClient: jest.Mocked<HttpClient>;
+  let positionModeAPI: PositionModeAPI;
 
-  it('should fetch the current position mode', async () => {
-    const mockResponse = { mode: 'Hedge' };
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
-
-    const response = await positionModeAPI.getPositionMode();
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/account/position-mode');
-    expect(response).toEqual(mockResponse);
+  beforeEach(() => {
+    httpClient = new HttpClient('mockApiKey', 'mockSecret') as jest.Mocked<HttpClient>;
+    positionModeAPI = new PositionModeAPI(httpClient);
   });
 
-  it('should set the position mode', async () => {
-    const mockRequest = 'OneWay';
-    (httpClient.post as jest.Mock).mockResolvedValue(undefined);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    await positionModeAPI.setPositionMode(mockRequest);
-    expect(httpClient.post).toHaveBeenCalledWith('/api/v1/account/set-position-mode', { mode: mockRequest });
+  describe('getPositionMode', () => {
+    it('should return the current position mode', async () => {
+      const mockResponse: PositionModeResponse = { mode: 'hedge' };
+      httpClient.get = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await positionModeAPI.getPositionMode();
+
+      expect(httpClient.get).toHaveBeenCalledWith('/api/v1/account/position-mode');
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('setPositionMode', () => {
+    it('should set the position mode', async () => {
+      const mode = 'one-way';
+      httpClient.post = jest.fn().mockResolvedValue(undefined);
+
+      await positionModeAPI.setPositionMode(mode);
+
+      expect(httpClient.post).toHaveBeenCalledWith('/api/v1/account/set-position-mode', { mode });
+    });
   });
 });

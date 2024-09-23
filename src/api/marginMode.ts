@@ -1,23 +1,31 @@
-import { httpClient } from '../httpClient'; // Добавлен импорт
+import { HttpClient } from '../httpClient';
 
 export interface MarginModeResponse {
   mode: string;
 }
 
 export class MarginModeAPI {
- /**
- * Получение текущего режима маржи.
- * @returns {Promise<MarginModeResponse>} Текущий режим маржи.
- */
-public async getMarginMode(): Promise<MarginModeResponse> {
-  return httpClient.get<MarginModeResponse>('/api/v1/account/margin-mode');
-}
+  private httpClient: HttpClient;
 
-/**
- * Установка режима маржи.
- * @param {string} mode - Режим маржи.
- */
-public async setMarginMode(mode: string): Promise<void> {
-  await httpClient.post('/api/v1/account/set-margin-mode', { mode });
-}
+  // Конструктор принимает экземпляр HttpClient
+  constructor(httpClient: HttpClient) {
+    this.httpClient = httpClient;
+  }
+
+  /**
+   * Получение текущего режима маржи.
+   * @returns {Promise<MarginModeResponse>} Текущий режим маржи.
+   */
+  public async getMarginMode(): Promise<MarginModeResponse> {
+    return this.httpClient.get<MarginModeResponse>('/api/v1/account/margin-mode');
+  }
+
+  /**
+   * Установка режима маржи.
+   * @param {string} mode - Режим маржи.
+   * @returns {Promise<void>} Результат выполнения.
+   */
+  public async setMarginMode(mode: string): Promise<void> {
+    await this.httpClient.post('/api/v1/account/set-margin-mode', { mode });
+  }
 }

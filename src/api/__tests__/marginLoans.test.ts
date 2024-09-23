@@ -1,37 +1,72 @@
-import { MarginLoansAPI } from '../marginLoans';
-import { httpClient } from '../../httpClient';
+import { MarginLoansAPI, MarginLoanResponse, MarginBorrowRequest, MarginBorrowResponse, MarginRepayRequest, MarginRepayResponse } from '../marginLoans';
+import { HttpClient } from '../../httpClient';
 
 jest.mock('../../httpClient');
 
 describe('MarginLoansAPI', () => {
-  const marginLoansAPI = new MarginLoansAPI();
+  let httpClient: jest.Mocked<HttpClient>;
+  let marginLoansAPI: MarginLoansAPI;
 
-  it('should fetch active loans', async () => {
-    const mockResponse = [{ loanId: '123', asset: 'BTC', amountBorrowed: '1.0', interestAccrued: '0.01' }];
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
-
-    const response = await marginLoansAPI.getActiveLoans();
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/margin/loans');
-    expect(response).toEqual(mockResponse);
+  beforeEach(() => {
+    httpClient = new HttpClient('mockApiKey', 'mockSecret') as jest.Mocked<HttpClient>;
+    marginLoansAPI = new MarginLoansAPI(httpClient);
   });
 
-  it('should borrow margin', async () => {
-    const mockRequest = { asset: 'BTC', amount: '1' };
-    const mockResponse = { borrowId: '123', status: 'success' };
-    (httpClient.post as jest.Mock).mockResolvedValue(mockResponse);
+  describe('getActiveLoans', () => {
+    it('should fetch active margin loans', async () => {
+      const mockResponse: MarginLoanResponse[] = [
+        {
+          loanId: '1',
+          asset: 'BTC',
+          amountBorrowed: '0.5',
+          interestAccrued: '0.01',
+          timestamp: 1625256000,
+        },
+      ];
+      httpClient.get = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marginLoansAPI.borrowMargin(mockRequest);
-    expect(httpClient.post).toHaveBeenCalledWith('/api/v1/margin/borrow', mockRequest);
-    expect(response).toEqual(mockResponse);
+      const result = await marginLoansAPI.getActiveLoans();
+
+      expect(httpClient.get).toHaveBeenCalledWith('/api/v1/margin/loans');
+      expect(result).toEqual(mockResponse);
+    });
   });
 
-  it('should repay margin', async () => {
-    const mockRequest = { asset: 'BTC', amount: '1' };
-    const mockResponse = { repayId: '123', status: 'success' };
-    (httpClient.post as jest.Mock).mockResolvedValue(mockResponse);
+  describe('borrowMargin', () => {
+    it('should borrow margin', async () => {
+      const request: MarginBorrowRequest = {
+        asset: 'BTC',
+        amount: '0.5',
+      };
+      const mockResponse: MarginBorrowResponse = {
+        borrowId: '123',
+        status: 'success',
+      };
+      httpClient.post = jest.fn().mockResolvedValue(mockResponse);
 
-    const response = await marginLoansAPI.repayMargin(mockRequest);
-    expect(httpClient.post).toHaveBeenCalledWith('/api/v1/margin/repay', mockRequest);
-    expect(response).toEqual(mockResponse);
+      const result = await marginLoansAPI.borrowMargin(request);
+
+      expect(httpClient.post).toHaveBeenCalledWith('/api/v1/margin/borrow', request);
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('repayMargin', () => {
+    it('should repay margin', async () => {
+      const request: MarginRepayRequest = {
+        asset: 'BTC',
+        amount: '0.5',
+      };
+      const mockResponse: MarginRepayResponse = {
+        repayId: '456',
+        status: 'success',
+      };
+      httpClient.post = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await marginLoansAPI.repayMargin(request);
+
+      expect(httpClient.post).toHaveBeenCalledWith('/api/v1/margin/repay', request);
+      expect(result).toEqual(mockResponse);
+    });
   });
 });

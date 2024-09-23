@@ -17,11 +17,14 @@ npm install blofin-sdk
 To get started with the Blofin SDK, import the necessary APIs from the main export file:
 
 ```typescript
-import { AccountAPI, OrderAPI, MarketAPI, httpClient } from 'blofin-sdk';
+import { createHttpClient } from 'blofin-sdk';
 
-// Example usage of AccountAPI
-const accountAPI = new AccountAPI();
-const balance = await accountAPI.getBalance();
+const apiKey = 'your-api-key';
+const apiSecret = 'your-api-secret';
+
+ const client = createHttpClient(apiKey, apiSecret);
+
+ const balance = await client.get('/api/v1/account/balance');
 console.log(balance);
 ```
 
@@ -30,19 +33,19 @@ console.log(balance);
 ### HTTP Client
 This SDK uses a shared HTTP client to make requests to the Blofin API. This client encapsulates all the network logic and provides methods for making GET and POST requests.
 ```
-import { httpClient } from 'blofin-sdk';
+import { createBlofinClient } from 'blofin-sdk';
 
-// GET request
-const balance = await httpClient.get('/api/v1/account/balance');
+const apiKey = 'your-api-key';
+const apiSecret = 'your-api-secret';
 
-// POST request
-const orderResponse = await httpClient.post('/api/v1/order', {
-    symbol: 'BTCUSDT',
-    side: 'buy',
-    type: 'limit',
-    quantity: '1',
-    price: '50000',
-});
+ const client = createBlofinClient(apiKey, apiSecret);
+
+ const balance = await client.account.getBalance();
+const openOrders = await client.order.getOpenOrders();
+const marketData = await client.market.getTicker('BTCUSDT');
+
+console.log(balance, openOrders, marketData);
+
 
 ```
 ### 1. AccountAPI
@@ -345,11 +348,14 @@ npm install blofin-sdk
 Для начала работы с Blofin SDK импортируйте необходимые API из основного экспортного файла:
 
 ```typescript
-import { AccountAPI, OrderAPI, MarketAPI, httpClient } from 'blofin-sdk';
+import { createHttpClient } from 'blofin-sdk';
 
-// Пример использования AccountAPI
-const accountAPI = new AccountAPI();
-const balance = await accountAPI.getBalance();
+const apiKey = 'your-api-key';
+const apiSecret = 'your-api-secret';
+
+ const client = createHttpClient(apiKey, apiSecret);
+
+ const balance = await client.get('/api/v1/account/balance');
 console.log(balance);
 ```
 

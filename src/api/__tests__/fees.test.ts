@@ -1,17 +1,35 @@
-import { FeesAPI } from '../fees';
-import { httpClient } from '../../httpClient';
+import { FeesAPI, FeesResponse } from '../fees';
+import { HttpClient } from '../../httpClient';
 
 jest.mock('../../httpClient');
 
 describe('FeesAPI', () => {
-  const feesAPI = new FeesAPI();
+    let httpClient: jest.Mocked<HttpClient>;
+    let feesAPI: FeesAPI;
 
-  it('should fetch fees', async () => {
-    const mockResponse = { makerFee: '0.001', takerFee: '0.002' };
-    (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+    beforeEach(() => {
+        httpClient = new HttpClient('mockApiKey', 'mockSecret') as jest.Mocked<HttpClient>;
+        feesAPI = new FeesAPI(httpClient);
+    });
 
-    const response = await feesAPI.getFees();
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/account/fees');
-    expect(response).toEqual(mockResponse);
-  });
+    it('should fetch fees successfully', async () => {
+        const mockResponse: FeesResponse = {
+            makerFee: '0.1',
+            takerFee: '0.2',
+        };
+
+        httpClient.get = jest.fn().mockResolvedValue(mockResponse);
+
+        const result = await feesAPI.getFees();
+
+        expect(httpClient.get).toHaveBeenCalledWith('/api/v1/account/fees');
+        expect(result).toEqual(mockResponse);
+    });
+
+    it('should handle errors when fetching fees', async () => {
+        const mockError = new Error('Network error');
+        httpClient.get = jest.fn().mockRejectedValue(mockError);
+
+        await expect(feesAPI.getFees()).rejects.toThrow('Network error');
+    });
 });
