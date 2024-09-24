@@ -22,9 +22,9 @@ import { createHttpClient } from 'blofin-sdk';
 const apiKey = 'your-api-key';
 const apiSecret = 'your-api-secret';
 
- const client = createHttpClient(apiKey, apiSecret);
+const client = createHttpClient(apiKey, apiSecret);
 
- const balance = await client.get('/api/v1/account/balance');
+const balance = await client.get('/api/v1/account/balance');
 console.log(balance);
 ```
 
@@ -32,27 +32,30 @@ console.log(balance);
 
 ### HTTP Client
 This SDK uses a shared HTTP client to make requests to the Blofin API. This client encapsulates all the network logic and provides methods for making GET and POST requests.
-```
+```typescript
 import { createBlofinClient } from 'blofin-sdk';
 
 const apiKey = 'your-api-key';
 const apiSecret = 'your-api-secret';
 
- const client = createBlofinClient(apiKey, apiSecret);
+const client = createBlofinClient(apiKey, apiSecret);
 
- const balance = await client.account.getBalance();
+const balance = await client.account.getBalance();
 const openOrders = await client.order.getOpenOrders();
 const marketData = await client.market.getTicker('BTCUSDT');
 
 console.log(balance, openOrders, marketData);
-
-
 ```
+
 ### 1. AccountAPI
 
 Methods for working with user accounts.
 
 - `getBalance`: Get the account balance.
+- `transferFunds`: Transfer funds between accounts.
+- `getTransferHistory`: Get transfer history.
+- `getDepositHistory`: Get deposit history.
+- `getWithdrawalHistory`: Get withdrawal history.
 
 #### Example:
 
@@ -61,9 +64,9 @@ const accountAPI = new AccountAPI();
 const balance = await accountAPI.getBalance();
 console.log(balance);
 ```
+
 ### 2. AssetAPI 
 API for working with asset transfers, deposit history, and withdrawal history.
- 
 
 Methods for working with assets.
 
@@ -95,10 +98,8 @@ const fees = await feesAPI.getFees();
 console.log(fees);
 ```
 
-
 ### 4. LeverageAPI 
 This API allows you to manage leverage for different instruments.
- 
 
 Methods for working with leverage.
 
@@ -106,25 +107,25 @@ Methods for working with leverage.
 - `setLeverage`: Set leverage for a specific instrument.
 
 #### Example:
-```
+```typescript
 const leverageAPI = new LeverageAPI();
 const leverageInfo = await leverageAPI.getLeverageInfo();
 console.log(leverageInfo);
 ```
+
 ### 5. MarginAccountAPI 
- 
+
 Methods for working with margin accounts.
 
 - `getMarginBalance`: Get margin balance information.
 
 #### Example:
 
-``` 
+```typescript
 const marginAccountAPI = new MarginAccountAPI();
 const marginBalance = await marginAccountAPI.getMarginBalance();
 console.log(marginBalance);
 ```
-
 
 ### 6. MarginLoansAPI 
 API for managing margin loans, including creating and repaying loans.
@@ -137,17 +138,14 @@ Methods for working with margin loans.
 
 #### Example:
 
-``` 
+```typescript
 const marginLoansAPI = new MarginLoansAPI();
 const activeLoans = await marginLoansAPI.getActiveLoans();
 console.log(activeLoans);
 ```
 
-
 ### 7. MarginModeAPI 
 This API provides management of the margin trading mode.
-
- 
 
 Methods for working with margin trading mode.
 
@@ -162,10 +160,8 @@ const marginMode = await marginModeAPI.getMarginMode();
 console.log(marginMode);
 ```
 
-
 ### 8. MarginOrderAPI
 This API is used to manage margin orders.
- 
 
 Methods for working with margin orders.
 
@@ -187,7 +183,6 @@ console.log(orderResponse);
 
 ### 9. MarginTransactionsAPI
 This API allows you to retrieve information about margin transactions, such as borrowings and repayments.
-### MarginTransactionsAPI
 
 Methods for working with margin transactions.
 
@@ -201,22 +196,21 @@ const transactions = await marginTransactionsAPI.getMarginTransactions();
 console.log(transactions);
 ```
 
-
 ### 10. MarketAPI 
 This API provides access to market data, such as tickers, trade history, order books, and candlestick charts.
 
-```markdown
-### MarketAPI
-
 Methods for working with market data.
 
-- `getTicker`: Get the current ticker price.
-- `getTrades`: Get trade history.
+- `getTicker`: Get the current ticker price for a specific symbol.
+- `getTrades`: Get trade history for a specific symbol.
 - `getInstruments`: Get a list of available instruments.
-- `getOrderBook`: Get the order book.
-- `getCandlesticks`: Get candlestick data.
-- `getFundingRate`: Get the current funding rate.
-- `getMarkPrice`: Get the current mark price.
+- `getOrderBook`: Get the order book for a specific symbol.
+- `getCandlesticks`: Get candlestick data for a specific symbol and interval.
+- `getFundingRate`: Get the current funding rate for a specific symbol.
+- `getFundingRateHistory`: Get funding rate history for a specific symbol.
+- `getMarkPrice`: Get the current mark price for a specific symbol.
+- `getAllTickers`: Get all tickers.
+- `getTradeHistory`: Get trade history for a specific symbol.
 
 #### Example:
 
@@ -226,12 +220,8 @@ const ticker = await marketAPI.getTicker('BTCUSDT');
 console.log(ticker);
 ```
 
-
-### 3. OrderAPI 
+### 11. OrderAPI 
 This API is used for working with orders on the platform.
-
-```markdown
-### OrderAPI
 
 Methods for working with orders.
 
@@ -247,12 +237,8 @@ const orders = await orderAPI.getOpenOrders();
 console.log(orders);
 ```
 
-
-### 11. PositionAPI 
+### 12. PositionAPI 
 This API provides access to managing current positions and closing them.
-
-```markdown
-### PositionAPI
 
 Methods for working with positions.
 
@@ -267,10 +253,8 @@ const positions = await positionAPI.getPosition();
 console.log(positions);
 ```
 
-### 12. PositionModeAPI
+### 13. PositionModeAPI
 This API provides management of the position mode on the platform.
-
-### PositionModeAPI
 
 Methods for working with position mode.
 
@@ -285,12 +269,8 @@ const positionMode = await positionModeAPI.getPositionMode();
 console.log(positionMode);
 ```
 
-
-### 13. TpslOrderAPI 
+### 14. TpslOrderAPI 
 This API provides management of Take-Profit/Stop-Loss (TP/SL) orders.
-
-```markdown
-### TpslOrderAPI
 
 Methods for working with TP/SL orders.
 
@@ -306,11 +286,8 @@ const tpslOrderHistory = await tpslOrderAPI.getTpslOrderHistory();
 console.log(tpslOrderHistory);
 ```
 
-### 14. TradeAPI 
+### 15. TradeAPI 
 This API provides management of trading operations, including placing and canceling orders.
-
-```markdown
-### TradeAPI
 
 Methods for working with trading operations.
 
@@ -353,9 +330,9 @@ import { createHttpClient } from 'blofin-sdk';
 const apiKey = 'your-api-key';
 const apiSecret = 'your-api-secret';
 
- const client = createHttpClient(apiKey, apiSecret);
+const client = createHttpClient(apiKey, apiSecret);
 
- const balance = await client.get('/api/v1/account/balance');
+const balance = await client.get('/api/v1/account/balance');
 console.log(balance);
 ```
 
@@ -363,27 +340,30 @@ console.log(balance);
 
 ### HTTP-клиент
 Этот SDK использует общий HTTP-клиент для выполнения запросов к API Blofin. Этот клиент инкапсулирует всю логику работы с сетью и предоставляет методы для выполнения GET и POST запросов.
+```typescript
+import { createBlofinClient } from 'blofin-sdk';
+
+const apiKey = 'your-api-key';
+const apiSecret = 'your-api-secret';
+
+const client = createBlofinClient(apiKey, apiSecret);
+
+const balance = await client.account.getBalance();
+const openOrders = await client.order.getOpenOrders();
+const marketData = await client.market.getTicker('BTCUSDT');
+
+console.log(balance, openOrders, marketData);
 ```
-import { httpClient } from 'blofin-sdk';
 
-// GET запрос
-const balance = await httpClient.get('/api/v1/account/balance');
-
-// POST запрос
-const orderResponse = await httpClient.post('/api/v1/order', {
-  symbol: 'BTCUSDT',
-  side: 'buy',
-  type: 'limit',
-  quantity: '1',
-  price: '50000',
-});
-
-```
 ### 1. AccountAPI
 
 Методы для работы с аккаунтами пользователей.
 
 - `getBalance`: Получение баланса аккаунта.
+- `transferFunds`: Перевод средств между счетами.
+- `getTransferHistory`: Получение истории переводов.
+- `getDepositHistory`: Получение истории депозитов.
+- `getWithdrawalHistory`: Получение истории выводов.
 
 #### Пример:
 
@@ -392,9 +372,9 @@ const accountAPI = new AccountAPI();
 const balance = await accountAPI.getBalance();
 console.log(balance);
 ```
+
 ### 2. AssetAPI 
 API для работы с переводами активов, историей депозитов и выводов.
- 
 
 Методы для работы с активами.
 
@@ -426,10 +406,8 @@ const fees = await feesAPI.getFees();
 console.log(fees);
 ```
 
-
 ### 4. LeverageAPI 
 Этот API позволяет управлять кредитным плечом для разных инструментов.
- 
 
 Методы для работы с кредитным плечом.
 
@@ -437,25 +415,25 @@ console.log(fees);
 - `setLeverage`: Установка кредитного плеча для конкретного инструмента.
 
 #### Пример:
-```
+```typescript
 const leverageAPI = new LeverageAPI();
 const leverageInfo = await leverageAPI.getLeverageInfo();
 console.log(leverageInfo);
 ```
+
 ### 5. MarginAccountAPI 
- 
+
 Методы для работы с маржинальными аккаунтами.
 
 - `getMarginBalance`: Получение информации о маржинальных балансах.
 
 #### Пример:
 
-``` 
+```typescript
 const marginAccountAPI = new MarginAccountAPI();
 const marginBalance = await marginAccountAPI.getMarginBalance();
 console.log(marginBalance);
 ```
-
 
 ### 6. MarginLoansAPI 
 API для управления маржинальными займами, включая создание и погашение займов.
@@ -468,17 +446,14 @@ API для управления маржинальными займами, вк�
 
 #### Пример:
 
-``` 
+```typescript
 const marginLoansAPI = new MarginLoansAPI();
 const activeLoans = await marginLoansAPI.getActiveLoans();
 console.log(activeLoans);
 ```
 
-
 ### 7. MarginModeAPI 
 Этот API предоставляет управление режимом маржинальной торговли.
-
- 
 
 Методы для работы с режимом маржинальной торговли.
 
@@ -493,10 +468,8 @@ const marginMode = await marginModeAPI.getMarginMode();
 console.log(marginMode);
 ```
 
-
 ### 8. MarginOrderAPI
 Этот API используется для управления маржинальными ордерами.
- 
 
 Методы для работы с маржинальными ордерами.
 
@@ -518,7 +491,6 @@ console.log(orderResponse);
 
 ### 9. MarginTransactionsAPI
 Этот API позволяет получать информацию о маржинальных транзакциях, таких как заимствования и погашения.
-### MarginTransactionsAPI
 
 Методы для работы с маржинальными транзакциями.
 
@@ -532,22 +504,21 @@ const transactions = await marginTransactionsAPI.getMarginTransactions();
 console.log(transactions);
 ```
 
-
 ### 10. MarketAPI 
 Этот API предоставляет доступ к рыночным данным, таким как тикеры, торговая история, стаканы ордеров и свечные графики.
 
-```markdown
-### MarketAPI
-
 Методы для работы с рыночными данными.
 
-- `getTicker`: Получение текущей цены тикера.
-- `getTrades`: Получение истории сделок.
+- `getTicker`: Получение текущей цены тикера для конкретного символа.
+- `getTrades`: Получение истории сделок для конкретного символа.
 - `getInstruments`: Список доступных инструментов.
-- `getOrderBook`: Получение стакана ордеров.
-- `getCandlesticks`: Получение данных по свечам (candlestick).
-- `getFundingRate`: Получение текущего funding rate.
-- `getMarkPrice`: Получение текущей mark price.
+- `getOrderBook`: Получение стакана ордеров для конкретного символа.
+- `getCandlesticks`: Получение данных по свечам (candlestick) для конкретного символа и интервала.
+- `getFundingRate`: Получение текущего funding rate для конкретного символа.
+- `getFundingRateHistory`: Получение истории funding rate для конкретного символа.
+- `getMarkPrice`: Получение текущей mark price для конкретного символа.
+- `getAllTickers`: Получение всех тикеров.
+- `getTradeHistory`: Получение истории сделок для конкретного символа.
 
 #### Пример:
 
@@ -557,12 +528,8 @@ const ticker = await marketAPI.getTicker('BTCUSDT');
 console.log(ticker);
 ```
 
-
-### 3. OrderAPI 
+### 11. OrderAPI 
 Этот API используется для работы с ордерами на платформе.
-
-```markdown
-### OrderAPI
 
 Методы для работы с ордерами.
 
@@ -578,12 +545,8 @@ const orders = await orderAPI.getOpenOrders();
 console.log(orders);
 ```
 
-
-### 11. PositionAPI 
+### 12. PositionAPI 
 Этот API предоставляет доступ к управлению текущими позициями и их закрытию.
-
-```markdown
-### PositionAPI
 
 Методы для работы с позициями.
 
@@ -598,10 +561,8 @@ const positions = await positionAPI.getPosition();
 console.log(positions);
 ```
 
-### 12. PositionModeAPI
+### 13. PositionModeAPI
 Этот API предоставляет управление режимом позиций на платформе.
-
-### PositionModeAPI
 
 Методы для работы с режимом позиций.
 
@@ -616,12 +577,8 @@ const positionMode = await positionModeAPI.getPositionMode();
 console.log(positionMode);
 ```
 
-
-### 13. TpslOrderAPI 
+### 14. TpslOrderAPI 
 Этот API предоставляет управление ордерами типа Take-Profit/Stop-Loss (TP/SL).
-
-```markdown
-### TpslOrderAPI
 
 Методы для работы с TP/SL ордерами.
 
@@ -637,11 +594,8 @@ const tpslOrderHistory = await tpslOrderAPI.getTpslOrderHistory();
 console.log(tpslOrderHistory);
 ```
 
-### 14. TradeAPI 
+### 15. TradeAPI 
 Этот API предоставляет управление торговыми операциями, включая размещение и отмену ордеров.
-
-```markdown
-### TradeAPI
 
 Методы для работы с торговыми операциями.
 
