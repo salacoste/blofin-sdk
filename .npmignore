@@ -1,6 +1,12 @@
-node_modules/
 src/
-.env
-.gitignore
+tests/
+node_modules/
 .vscode/
+.idea/
 *.log
+coverage/
+.env
+.eslintignore
+.prettierrc
+jest.config.js
+tsconfig.json
