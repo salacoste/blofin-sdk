@@ -5,6 +5,16 @@ import {
   TradeMessage,
   OrderBookMessage,
 } from '../types/websocket';
+import logger from '../utils/logger';
+
+
+class WebSocketError extends Error {
+  constructor(message: string, public code?: number) {
+    super(message);
+    this.name = 'WebSocketError';
+  }
+}
+
 
 class Logger {
   static log(message: string) {
@@ -24,6 +34,8 @@ export class BlofingWebSocket extends EventEmitter {
   private ws: WebSocket | null = null;
   private pingInterval: NodeJS.Timeout | null = null;
   private reconnectTimeout: NodeJS.Timeout | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
 
   private readonly maxRequestsPerHour = 480;
   private requestCount = 0;
@@ -94,6 +106,8 @@ export class BlofingWebSocket extends EventEmitter {
       this.emit('open');
       this.login();
       this.startPingInterval();
+      this.reconnectAttempts = 0;
+
     });
 
     this.ws.on('message', (data: WebSocket.Data) => {
@@ -101,21 +115,21 @@ export class BlofingWebSocket extends EventEmitter {
         const message = JSON.parse(data.toString());
         this.handleMessage(message);
       } catch (error) {
-        Logger.error(`Failed to parse message: ${error}`);
-        this.emit('error', new Error('Failed to parse message'));
+        logger.error(`Failed to parse message: ${error}`);
+        this.emit('error', new WebSocketError('Failed to parse message'));
       }
     });
 
     this.ws.on('close', (code: number, reason: string) => {
-      Logger.log(`WebSocket disconnected. Code: ${code}, Reason: ${reason}`);
+      logger.info(`WebSocket disconnected. Code: ${code}, Reason: ${reason}`);
       this.emit('close', code, reason);
       this.clearPingInterval();
       this.reconnect();
     });
 
     this.ws.on('error', (error) => {
-      Logger.error(`WebSocket error: ${error.message}`);
-      this.emit('error', error);
+      logger.error(`WebSocket error: ${error.message}`);
+      this.emit('error', new WebSocketError(error.message));
     });
   }
 
@@ -233,13 +247,13 @@ export class BlofingWebSocket extends EventEmitter {
    */
   private handleMessage(message: any) {
     if (message.event === 'login') {
-      Logger.log('Successfully logged in');
+      logger.info('Successfully logged in');
       this.emit('login');
     } else if (
       message.event === 'subscribe' ||
       message.event === 'unsubscribe'
     ) {
-      Logger.log(`${message.event} to ${message.arg?.channel}`);
+      logger.info(`${message.event} to ${message.arg?.channel}`);
     } else if (message.arg?.channel === 'trades') {
       this.emit('trades', message as TradeMessage);
     } else if (
@@ -286,10 +300,18 @@ export class BlofingWebSocket extends EventEmitter {
    * @private
    */
   private reconnect() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      logger.error('Max reconnection attempts reached. Giving up.');
+      this.emit('error', new WebSocketError('Max reconnection attempts reached'));
+      return;
+    }
+
+    const delay = Math.pow(2, this.reconnectAttempts) * 1000; // Exponential backoff
     this.reconnectTimeout = setTimeout(() => {
-      console.log('Attempting to reconnect...');
+      logger.info(`Attempting to reconnect (attempt ${this.reconnectAttempts + 1})...`);
+      this.reconnectAttempts++;
       this.connect();
-    }, 5000);
+    }, delay);
   }
 
   /**

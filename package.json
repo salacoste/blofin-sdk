@@ -1,14 +1,25 @@
 {
-  "name": "blofin-sdk-o1",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "blofin-sdk",
+  "version": "0.8.5",
+  "description": "Typescript SDK for Blofin API",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --preset ts-jest",
+    "build": "tsc",
+    "prepare": "npm run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "blofin",
+    "sdk",
+    "api",
+    "crypto"
+  ],
+  "author": "Ivan D",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salacoste/blofin-sdk.git"
+  },
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/dotenv": "^8.2.0",
@@ -31,6 +42,7 @@
   "dependencies": {
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
+    "winston": "^3.15.0",
     "ws": "^8.18.0"
   }
 }
