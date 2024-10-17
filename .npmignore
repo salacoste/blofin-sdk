@@ -10,3 +10,5 @@ coverage/
 .prettierrc
 jest.config.js
 tsconfig.json
+docs/
+examples/

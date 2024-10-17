@@ -1,5 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import crypto from 'crypto';
+import { applyRateLimiter } from './utils/rateLimiter';
+
 
 import { PublicApi } from './modules/publicApi';
 import { AccountApi } from './modules/accountApi';
@@ -35,12 +37,12 @@ export class BlofingClient {
     this.baseUrl = testnet
       ? 'https://demo-trading-openapi.blofin.com'
       : 'https://openapi.blofin.com';
-    this.axiosInstance = axios.create({
+    this.axiosInstance = applyRateLimiter(axios.create({
       baseURL: this.baseUrl,
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    }),30);
 
     const wsUrl = testnet
       ? 'wss://demo-trading-openapi.blofin.com/ws/public'

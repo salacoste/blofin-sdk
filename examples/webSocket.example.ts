@@ -1,4 +1,4 @@
-import { BlofingClient } from '../../src/BlofingClient';
+import { BlofingClient } from '../src/BlofingClient';
 import dotenv from 'dotenv';
 
 dotenv.config();
