@@ -1,6 +1,6 @@
 {
   "name": "blofin-sdk",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "description": "Typescript SDK for Blofin API",
   "main": "dist/index.js",
   "scripts": {
